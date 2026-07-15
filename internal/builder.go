@@ -27,6 +27,7 @@ func Builder(original Request, target Parameter, mutation Mutation) (Request, er
 		}
 	}
 
+	newRequest.Mutation = mutation
 	return newRequest, nil
 }
 

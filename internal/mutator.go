@@ -7,7 +7,8 @@ func Mutator(req Request) ([]Request, error) {
 
 	targets := []MutationTarget{NameTarget, ValueTarget}
 	strategies := []MutationStrategy{Append, Replace, Prepend}
-	payloads := []string{"'", "\"", "[", "]", "[]", "\\", "%00", "%0A", "%0D"}
+	// payloads := []string{"'", "\"", "[", "]", "[]", "\\", "%00", "%0A", "%0D"}
+	payloads := []string{"'", "\"", "[", "]"}
 
 	for _, param := range req.Parameters {
 		for _, target := range targets {
@@ -18,6 +19,8 @@ func Mutator(req Request) ([]Request, error) {
 					mutation.Target = target
 					mutation.Strategy = strategy
 					mutation.Payload = payload
+					mutation.Parameter = param.Name
+					mutation.Location = param.Location
 
 					forged, err := Builder(req, param, mutation)
 					if err != nil {

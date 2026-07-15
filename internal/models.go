@@ -5,9 +5,11 @@ import "net/http"
 type Request struct {
 	Method     string
 	URL        string
-	Headers    map[string][]string
+	Headers    http.Header
 	Body       string
 	Parameters []Parameter
+
+	Mutation Mutation
 }
 
 type Parameter struct {
@@ -35,9 +37,11 @@ const (
 )
 
 type Mutation struct {
-	Target   MutationTarget
-	Strategy MutationStrategy
-	Payload  string
+	Parameter string
+	Location  ParamLocation
+	Target    MutationTarget
+	Strategy  MutationStrategy
+	Payload   string
 }
 
 type MutationTarget string
@@ -59,4 +63,51 @@ type Result struct {
 	Request  Request
 	Response *http.Response
 	Error    error
+}
+
+type Analysis struct {
+	Request      Request
+	StatusCode   int
+	BodyLength   int64
+	Error        error
+	ResponseBody string
+}
+
+type Finding struct {
+	Request  Request
+	Reason   string
+	Severity Severity
+	Evidence string
+	Mutation Mutation
+}
+
+type Severity string
+
+const (
+	Info     Severity = "info"
+	Low      Severity = "low"
+	Medium   Severity = "medium"
+	High     Severity = "high"
+	Critical Severity = "critical"
+	Unknown  Severity = "unknown"
+)
+
+type Report struct {
+	Target string
+
+	Baseline Analysis
+
+	Findings []FinalResult
+}
+
+type FinalResult struct {
+	Severity Severity
+	Reason   string
+	Evidence string
+
+	Parameter         string
+	ParamLocation     ParamLocation
+	ParamTargetedPart MutationTarget
+	MutationStrategy  MutationStrategy
+	Payload           string
 }

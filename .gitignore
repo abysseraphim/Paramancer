@@ -1,4 +1,5 @@
 .vscode/
 .idea/
 .DS_store
+*.output.json
 

@@ -18,7 +18,7 @@ func Sender(request Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	req.Header = request.Headers
+	req.Header = request.Headers.Clone()
 	if req.Header == nil {
 		req.Header = make(http.Header)
 	}

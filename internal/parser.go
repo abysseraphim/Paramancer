@@ -29,7 +29,7 @@ func Parse(rawInput string, dataType InputType, scheme string) (Request, error) 
 
 func ParseURL(inputURL string) (Request, error) {
 	var req Request
-	headers := make(map[string][]string)
+	headers := make(http.Header)
 
 	parsedURL, err := url.Parse(inputURL)
 	if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"paramancer/internal"
 	"sync"
 )
@@ -61,6 +62,26 @@ func main() {
 	// 	fmt.Println(mReq)
 	// }
 
+	var baseLine internal.Analysis
+	orgRes, err := internal.Sender(request)
+	if err != nil {
+		fmt.Printf("%s%v%s\n\n", Red, "  [!] failed to fetch the original", Reset)
+		return
+	}
+
+	// -------------------------------baseline
+	defer orgRes.Body.Close()
+	baseLine.Request = request
+	baseLine.StatusCode = orgRes.StatusCode
+	baseLine.Error = nil
+	body, err := io.ReadAll(orgRes.Body)
+	if err != nil {
+		fmt.Printf("%s  [!] failed to read baseline response%s\n", Red, Reset)
+	}
+	baseLine.BodyLength = int64(len(body))
+	baseLine.ResponseBody = string(body)
+	// -------------------------------baseline
+
 	fmt.Printf("%s%v %v% v%s\n", Green, "  [*] starting reqeuster enging with", *threadsFlag, "workers", Reset)
 
 	jobs := make(chan internal.Request, 100)
@@ -91,5 +112,34 @@ func main() {
 		allResults = append(allResults, result)
 	}
 	fmt.Printf("%s  [*] collected %d responses. %s\n", Green, len(allResults), Reset)
+
+	// fmt.Printf("%s%v%s\n", Purple, "  [*] BaseLine", Red)
+	// fmt.Printf(
+	// 	"%d  %d bytes  err=%v\n",
+	// 	baseLine.StatusCode,
+	// 	baseLine.BodyLength,
+	// 	baseLine.Error,
+	// )
+
+	// fmt.Printf("%s%v%s\n", Purple, "  [*] Mutation", Red)
+
+	analyses := internal.Analyzer(allResults)
+
+	// for _, a := range analyses {
+	// 	fmt.Printf(
+	// 		"%d  %d bytes  err=%v\n",
+	// 		a.StatusCode,
+	// 		a.BodyLength,
+	// 		a.Error,
+	// 	)
+	// }
+
+	findings := internal.Detect(baseLine, analyses)
+
+	err = internal.Reporter(request, baseLine, findings)
+	if err != nil {
+		fmt.Printf("%s%v%s\n\n", Red, err, Reset)
+		return
+	}
 
 }
