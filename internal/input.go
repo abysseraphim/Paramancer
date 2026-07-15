@@ -20,18 +20,20 @@ func ReadInput() (string, InputType, string, error) {
 	schemeFlag := flag.String("s", "", "Request scheme (http or https)")
 
 	flag.Parse()
+	// parse all CLI flags here
+	// other packages may define additional flags before ReadInput() is called
 
 	var dataType InputType
 
 	if *urlFlag == "" && *rawRequestFlag == "" {
 		// fmt.Println("  [!] You must specify exactly one flag with valid data")
-		return "", dataType, "", errors.New("exactly one of -u or -r must be provided")
+		return "", dataType, "", errors.New("  [!] exactly one of -u or -r must be provided")
 
 	} else if *urlFlag != "" && *rawRequestFlag != "" {
 		// fmt.Println("  [!] You must specify exactly one flag with valid data")
-		return "", dataType, "", errors.New("multiple input flags")
+		return "", dataType, "", errors.New("  [!] multiple input flags")
 	} else if *urlFlag != "" && *schemeFlag != "" {
-		return "", dataType, "", errors.New("-s can only be used with -r")
+		return "", dataType, "", errors.New("  [!] -s can only be used with -r")
 	}
 
 	if *urlFlag != "" {
@@ -50,7 +52,7 @@ func ReadInput() (string, InputType, string, error) {
 			fileContentString := string(fileContent)
 			return fileContentString, RawRequest, *schemeFlag, nil
 		} else {
-			return "", dataType, "", errors.New("in raw request mode, scheme is required. enter scheme with: -s http or -s https")
+			return "", dataType, "", errors.New("  [!] in raw request mode, scheme is required. enter scheme with: -s http or -s https")
 		}
 	}
 
