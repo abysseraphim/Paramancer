@@ -7,8 +7,7 @@ func Mutator(req Request) ([]Request, error) {
 
 	targets := []MutationTarget{NameTarget, ValueTarget}
 	strategies := []MutationStrategy{Append, Replace, Prepend}
-	// payloads := []string{"'", "\"", "[", "]", "[]", "\\", "%00", "%0A", "%0D"}
-	payloads := []string{"'", "\"", "[", "]"}
+	payloads := []string{"'", "\"", "[", "]", "%00", "%09", "%0D", "%0A", "\t", "\r", "\n", "\\", "{{7*7}}", "${7*7}", "[]", "null", "NaN"}
 
 	for _, param := range req.Parameters {
 		for _, target := range targets {
@@ -24,7 +23,7 @@ func Mutator(req Request) ([]Request, error) {
 
 					forged, err := Builder(req, param, mutation)
 					if err != nil {
-						fmt.Println("  [!]", err)
+						fmt.Printf("\033[31m  [!] %v\033[0m\n", err)
 						continue
 					}
 

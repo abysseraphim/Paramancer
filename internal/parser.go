@@ -53,6 +53,7 @@ func ParseRawRequest(inputRequest string, scheme string) (Request, error) {
 	if err != nil {
 		return req, err
 	}
+	defer parsedREQ.Body.Close()
 
 	req.URL = fmt.Sprintf("%v://%v%v", scheme, parsedREQ.Host, parsedREQ.URL.Path)
 	req.Headers = parsedREQ.Header
@@ -61,7 +62,6 @@ func ParseRawRequest(inputRequest string, scheme string) (Request, error) {
 	if err != nil {
 		return req, err
 	}
-	defer parsedREQ.Body.Close()
 
 	req.Body = string(body)
 
@@ -74,7 +74,7 @@ func ParseRawRequest(inputRequest string, scheme string) (Request, error) {
 			req.Parameters = append(req.Parameters, extendedParams...)
 		}
 		if err != nil {
-			fmt.Println("  [!]", err)
+			fmt.Printf("\033[31m  [!] %v\033[0m\n", err)
 		}
 
 	} else if strings.HasPrefix(contentType, "application/json") {
@@ -83,7 +83,7 @@ func ParseRawRequest(inputRequest string, scheme string) (Request, error) {
 			req.Parameters = append(req.Parameters, extendedParams...)
 		}
 		if err != nil {
-			fmt.Println("  [!]", err)
+			fmt.Printf("\033[31m  [!] %v\033[0m\n", err)
 		}
 	}
 

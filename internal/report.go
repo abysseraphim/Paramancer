@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -26,7 +27,25 @@ func Reporter(request Request, baseline Analysis, findings []Finding) error {
 		f.ParamLocation = finding.Mutation.Location
 		f.ParamTargetedPart = finding.Mutation.Target
 		f.MutationStrategy = finding.Mutation.Strategy
-		f.Payload = finding.Mutation.Payload
+		orig := ""
+		for _, p := range request.Parameters {
+			if p.Name == finding.Mutation.Parameter && p.Location == finding.Mutation.Location {
+				if finding.Mutation.Target == NameTarget {
+					orig = p.Name
+				} else {
+					orig = p.Value
+				}
+				break
+			}
+		}
+		switch finding.Mutation.Strategy {
+		case Append:
+			f.Payload = orig + finding.Mutation.Payload
+		case Prepend:
+			f.Payload = finding.Mutation.Payload + orig
+		case Replace:
+			f.Payload = finding.Mutation.Payload
+		}
 
 		report.Findings = append(report.Findings, f)
 	}
@@ -52,7 +71,6 @@ func PrintCli(rep Report) {
 
 	buildCli.WriteString(" Baseline info:\n")
 	buildCli.WriteString(" Status Code:\n")
-	// buildCli.WriteString(fmt.Sprint(rep.Baseline.StatusCode))
 	buildCli.WriteString(fmt.Sprintf(" %v", strconv.Itoa(rep.Baseline.StatusCode)))
 	buildCli.WriteString("\n\n")
 
@@ -99,11 +117,15 @@ func PrintCli(rep Report) {
 }
 
 func SaveJSON(rep Report) error {
+	rep.Baseline.ResponseBody = "empty by choice"
+	rep.Baseline.Request.Mutation = Mutation{}
+
 	data, err := json.MarshalIndent(rep, "", "  ")
 	if err != nil {
-		fmt.Printf("  [!] failed to create JSON structure")
+		fmt.Printf("\033[31m  [!] failed to create JSON structure\033[0m")
 		return err
 	}
+	data = bytes.ReplaceAll(data, []byte(`\u003e`), []byte(`>`))
 
 	var filename string
 
@@ -119,11 +141,11 @@ func SaveJSON(rep Report) error {
 
 	err = os.WriteFile(filename, data, 0644)
 	if err != nil {
-		fmt.Printf("  [!] failed to create JSON file")
+		fmt.Printf("\033[31m  [!] failed to create JSON file\033[0m")
 		return err
 	}
 	fmt.Println()
-	fmt.Println("  [*] results also saved to: ", filename)
+	fmt.Println("\033[32m  [*] results also saved to: \033[0m", filename)
 	fmt.Println()
 
 	return nil

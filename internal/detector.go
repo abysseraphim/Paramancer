@@ -3,6 +3,7 @@ package internal
 import "fmt"
 
 func Detect(baseLine Analysis, analyses []Analysis) []Finding {
+	seen := make(map[string]bool)
 	var findings []Finding
 
 	for _, analysis := range analyses {
@@ -26,6 +27,15 @@ func Detect(baseLine Analysis, analyses []Analysis) []Finding {
 			})
 		}
 		if analysis.BodyLength != baseLine.BodyLength {
+			mut := analysis.Request.Mutation
+			key := fmt.Sprintf("%s|%s|%s|%s", mut.Parameter, mut.Location, mut.Target, mut.Strategy)
+
+			if seen[key] {
+				continue
+			}
+
+			seen[key] = true
+
 			findings = append(findings, Finding{
 				Request:  analysis.Request,
 				Reason:   "body length changed",

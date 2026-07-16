@@ -26,11 +26,9 @@ func ReadInput() (string, InputType, string, error) {
 	var dataType InputType
 
 	if *urlFlag == "" && *rawRequestFlag == "" {
-		// fmt.Println("  [!] You must specify exactly one flag with valid data")
 		return "", dataType, "", errors.New("  [!] exactly one of -u or -r must be provided")
 
 	} else if *urlFlag != "" && *rawRequestFlag != "" {
-		// fmt.Println("  [!] You must specify exactly one flag with valid data")
 		return "", dataType, "", errors.New("  [!] multiple input flags")
 	} else if *urlFlag != "" && *schemeFlag != "" {
 		return "", dataType, "", errors.New("  [!] -s can only be used with -r")
