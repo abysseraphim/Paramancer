@@ -2,4 +2,6 @@
 .idea/
 .DS_store
 *.output.json
+*.elf
+*.exe
 
